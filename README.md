@@ -53,8 +53,8 @@ This is a Flask-based web application that predicts the most suitable crop to cu
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/crop-recommendation-app.git
-   cd crop-recommendation-app
+   git clone https://github.com/nahargourav/SciFarm.git
+   cd SciFarm
    ```
 
 2. **Create virtual environment & install dependencies**
@@ -110,8 +110,10 @@ gunicorn
 ## 📸 Preview
 
 - **APP Screenshot**:
+
+
 ![image](https://github.com/user-attachments/assets/c73d8e78-0393-4ad9-bc86-273bf27b1e45)
-)
+
 
 ---
 
