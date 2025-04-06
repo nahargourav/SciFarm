@@ -103,7 +103,7 @@ gunicorn
 ## 🙏 Acknowledgments
 
 - Inspired by real-world agriculture challenges
-- ML Dataset from Kaggle (or your own preprocessing)
+- ML Dataset from Kaggle 
 
 ---
 
@@ -120,11 +120,3 @@ Created with 💚 by Gourav Nahar
 🔗 [LinkedIn](https://www.linkedin.com/in/nahargourav)
 
 ```
-
----
-
-Let me know if you'd like to include:
-- A demo video
-- Screenshot section
-- Link to the dataset used  
-I can add those too!
