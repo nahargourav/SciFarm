@@ -115,9 +115,9 @@ gunicorn
 
 ## 📬 Contact
 
-Created with 💚 by [Your Name]  
-📧 your.email@example.com  
-🔗 [LinkedIn](https://www.linkedin.com/in/yourprofile)
+Created with 💚 by Gourav Nahar  
+📧 gouravnahar3008@gmail.com  
+🔗 [LinkedIn](https://www.linkedin.com/in/nahargourav)
 
 ```
 
