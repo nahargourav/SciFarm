@@ -71,7 +71,7 @@ This is a Flask-based web application that predicts the most suitable crop to cu
 
 4. **Open in browser**
    ```
-   http://127.0.0.1:5000/
+   https://scifarm.onrender.com/
    ```
 
 ---
@@ -109,7 +109,8 @@ gunicorn
 
 ## 📸 Preview
 
-![App Screenshot](preview.png) <!-- Add your screenshot image -->
+![App Screenshot](![image](https://github.com/user-attachments/assets/c73d8e78-0393-4ad9-bc86-273bf27b1e45)
+) <!-- Add your screenshot image -->
 
 ---
 
