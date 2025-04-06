@@ -109,8 +109,9 @@ gunicorn
 
 ## 📸 Preview
 
-![App Screenshot](![image](https://github.com/user-attachments/assets/c73d8e78-0393-4ad9-bc86-273bf27b1e45)
-) <!-- Add your screenshot image -->
+- **APP Screenshot**:
+![image](https://github.com/user-attachments/assets/c73d8e78-0393-4ad9-bc86-273bf27b1e45)
+)
 
 ---
 
