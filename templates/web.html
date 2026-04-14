@@ -1,145 +1,542 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>SciFarm</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SciFarm — Crop Recommendation</title>
+    <meta name="description" content="AI-powered crop recommendation. Enter soil and climate data to find your ideal crop.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Mono&display=swap" rel="stylesheet">
 
     <style>
-        h1 {
-            color: mediumseagreen;
-            text-align: center;
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg:           #060e09;
+            --bg2:          #091410;
+            --surface:      rgba(255,255,255,.038);
+            --surface-hi:   rgba(255,255,255,.065);
+            --border:       rgba(255,255,255,.08);
+            --border-hi:    rgba(255,255,255,.15);
+            --green:        #3ecf8e;
+            --green-dim:    rgba(62,207,142,.12);
+            --green-glow:   rgba(62,207,142,.2);
+            --text:         #eaf5ee;
+            --text-muted:   rgba(234,245,238,.42);
+            --text-subtle:  rgba(234,245,238,.2);
+            --r6: 8px;
+            --r12: 14px;
+            --r20: 20px;
         }
 
-        .warning {
-            color: red;
-            font-weight: bold;
-            text-align: center;
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
+        /* ── aurora background ─────────────────────────────── */
+        .aurora {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            overflow: hidden;
+        }
+        .aurora-blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px);
+        }
+        .aurora-blob.a {
+            width: 600px; height: 400px;
+            background: radial-gradient(ellipse, rgba(22,163,74,.09) 0%, transparent 70%);
+            top: -100px; left: -150px;
+            animation: blobMove1 22s ease-in-out infinite alternate;
+        }
+        .aurora-blob.b {
+            width: 500px; height: 500px;
+            background: radial-gradient(ellipse, rgba(4,120,87,.08) 0%, transparent 70%);
+            bottom: -100px; right: -100px;
+            animation: blobMove2 28s ease-in-out infinite alternate;
+        }
+        .aurora-blob.c {
+            width: 300px; height: 300px;
+            background: radial-gradient(ellipse, rgba(6,78,59,.07) 0%, transparent 70%);
+            top: 40%; left: 60%;
+            animation: blobMove1 18s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes blobMove1 {
+            from { transform: translate(0, 0)  scale(1); }
+            to   { transform: translate(40px, 30px) scale(1.08); }
+        }
+        @keyframes blobMove2 {
+            from { transform: translate(0, 0)  scale(1); }
+            to   { transform: translate(-30px, -20px) scale(1.05); }
+        }
+
+        /* subtle dot grid */
+        .dot-grid {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image: radial-gradient(circle, rgba(255,255,255,.045) 1px, transparent 1px);
+            background-size: 32px 32px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+        }
+
+        /* ── layout ────────────────────────────────────────── */
+        .page {
+            position: relative; z-index: 1;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center;
+            padding: 60px 20px 100px;
+        }
+
+        /* ── brand chip ────────────────────────────────────── */
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 52px;
+            opacity: 0; animation: up .55s ease forwards .05s;
+        }
+        .brand-leaf {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, #14532d, #16a34a);
+            border-radius: 10px;
+            display: grid; place-items: center;
+            font-size: 1rem;
+            box-shadow: 0 4px 16px rgba(22,163,74,.3), inset 0 1px 0 rgba(255,255,255,.1);
+        }
+        .brand-name {
+            font-size: 1rem; font-weight: 700; letter-spacing: -.2px;
+            color: var(--text);
+        }
+        .brand-name b { color: var(--green); font-weight: 800; }
+
+        /* ── hero text ─────────────────────────────────────── */
+        .hero {
+            text-align: center; max-width: 520px; margin-bottom: 48px;
+            opacity: 0; animation: up .6s ease forwards .12s;
+        }
+        .hero h1 {
+            font-size: clamp(2rem, 5.5vw, 3.2rem);
+            font-weight: 800; line-height: 1.1; letter-spacing: -1.2px;
+            color: var(--text); margin-bottom: 14px;
+        }
+        .hero h1 span {
+            color: var(--green);
+            position: relative;
+        }
+        .hero p {
+            font-size: .93rem; color: var(--text-muted);
+            line-height: 1.75; font-weight: 400;
+        }
+
+        /* ── form card ─────────────────────────────────────── */
         .card {
-            margin-left: 410px;
-            margin-top: 20px;
-            color: white;
+            width: 100%; max-width: 700px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r20);
+            padding: 36px 40px;
+            box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 20px 60px rgba(0,0,0,.35);
+            opacity: 0; animation: up .65s ease forwards .22s;
         }
 
-        .container {
-            background: #edf2f7;
-            font-weight: bold;
-            padding-bottom: 10px;
-            border-radius: 15px;
+        /* ── section label ─────────────────────────────────── */
+        .section-label {
+            display: flex; align-items: center; gap: 10px;
+            margin: 24px 0 16px;
+        }
+        .section-label:first-child { margin-top: 0; }
+        .section-label span {
+            font-size: .68rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.3px; color: rgba(62,207,142,.55);
+            white-space: nowrap;
+        }
+        .sl-line { flex: 1; height: 1px; background: var(--border); }
+
+        /* ── input grid ────────────────────────────────────── */
+        .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+        .grid1 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+
+        .field label {
+            font-size: .7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .9px;
+            color: var(--text-muted);
+        }
+        .field input {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--r6);
+            padding: 11px 13px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: .9rem; font-weight: 500;
+            color: var(--text);
+            outline: none;
+            transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+            -webkit-appearance: none;
+        }
+        .field input::placeholder { color: var(--text-subtle); font-weight: 400; }
+        .field input:focus {
+            border-color: rgba(62,207,142,.5);
+            background: rgba(62,207,142,.04);
+            box-shadow: 0 0 0 3px rgba(62,207,142,.09);
+        }
+        .field input:hover:not(:focus) { border-color: var(--border-hi); }
+        .field-hint { font-size: .67rem; color: var(--text-subtle); letter-spacing: .1px; }
+
+        /* ── submit ────────────────────────────────────────── */
+        .submit-wrap { margin-top: 28px; }
+        .btn-submit {
+            width: 100%; padding: 15px;
+            background: var(--green);
+            border: none; border-radius: var(--r12);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: .93rem; font-weight: 700; letter-spacing: .1px;
+            color: #031a0c;
+            cursor: pointer;
+            transition: background .18s, box-shadow .18s, transform .12s;
+            position: relative; overflow: hidden;
+        }
+        .btn-submit::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.12) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform .5s ease;
+        }
+        .btn-submit:hover::after { transform: translateX(100%); }
+        .btn-submit:hover {
+            background: #2db87a;
+            box-shadow: 0 6px 26px rgba(62,207,142,.28);
+        }
+        .btn-submit:active { transform: scale(.99); }
+        .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+        /* ── result ────────────────────────────────────────── */
+        #result-scroll-target { scroll-margin-top: 24px; }
+
+        .result-wrap {
+            width: 100%; max-width: 700px; margin-top: 24px;
+            opacity: 0; animation: up .7s ease forwards .05s;
+        }
+        .result-card {
+            background: rgba(62,207,142,.04);
+            border: 1px solid rgba(62,207,142,.18);
+            border-radius: var(--r20); padding: 40px;
+            position: relative; overflow: hidden;
+            box-shadow: 0 0 0 1px rgba(62,207,142,.06) inset, 0 20px 60px rgba(0,0,0,.4);
+        }
+        /* top glow line */
+        .result-card::before {
+            content: '';
+            position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(62,207,142,.5), transparent);
+        }
+        /* giant background crop letter */
+        .rc-letter {
+            position: absolute; right: -8px; bottom: -30px;
+            font-size: 180px; font-weight: 900; line-height: 1;
+            color: rgba(62,207,142,.04); pointer-events: none;
+            font-family: 'Plus Jakarta Sans', sans-serif; user-select: none;
+        }
+
+        .rc-badge {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 4px 12px;
+            background: var(--green-dim);
+            border: 1px solid rgba(62,207,142,.22);
+            border-radius: 99px;
+            font-size: .7rem; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase;
+            color: var(--green); margin-bottom: 24px;
+        }
+        .rc-badge::before {
+            content: ''; width: 6px; height: 6px;
+            border-radius: 50%; background: var(--green);
+            animation: blink 2s ease infinite;
+        }
+        @keyframes blink {
+            0%,100% { opacity: 1; } 50% { opacity: .3; }
+        }
+
+        .rc-main {
+            display: flex; align-items: center; gap: 22px;
+            margin-bottom: 28px;
+        }
+        .rc-emoji {
+            font-size: 4rem; line-height: 1;
+            filter: drop-shadow(0 0 18px rgba(62,207,142,.35));
+            animation: softFloat 4s ease-in-out infinite;
+        }
+        @keyframes softFloat {
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-8px); }
+        }
+        .rc-name {
+            font-size: clamp(2.2rem, 5vw, 3rem);
+            font-weight: 800; letter-spacing: -1px; line-height: 1;
+            color: var(--green);
+        }
+        .rc-sub {
+            font-size: .85rem; color: var(--text-muted);
+            margin-top: 6px; font-weight: 400; line-height: 1.55;
+        }
+
+        .rc-divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+        .rc-message {
+            font-size: .9rem; color: var(--text-muted); line-height: 1.65;
+        }
+
+        .rc-footer {
+            margin-top: 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+        }
+        .rc-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .rc-tag {
+            padding: 5px 12px;
+            background: var(--surface-hi);
+            border: 1px solid var(--border);
+            border-radius: 6px; font-size: .72rem;
+            font-weight: 600; color: var(--text-muted);
+        }
+        .rc-again {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 9px 18px;
+            background: transparent; border: 1px solid var(--border-hi);
+            border-radius: var(--r6); color: var(--text-muted);
+            font-family: 'Plus Jakarta Sans', sans-serif; font-size: .8rem; font-weight: 600;
+            text-decoration: none; transition: all .18s;
+        }
+        .rc-again:hover {
+            border-color: rgba(62,207,142,.35); color: var(--green);
+            background: var(--green-dim);
+        }
+
+        /* ── footer ────────────────────────────────────────── */
+        .footer {
+            margin-top: 56px; font-size: .73rem;
+            color: var(--text-subtle); text-align: center; letter-spacing: .1px;
+        }
+        .footer b { color: var(--text-muted); }
+
+        /* ── keyframes ─────────────────────────────────────── */
+        @keyframes up {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── responsive ────────────────────────────────────── */
+        @media (max-width: 680px) {
+            .card { padding: 28px 20px; }
+            .grid3, .grid1 { grid-template-columns: 1fr 1fr; }
+            .result-card { padding: 28px 22px; }
+        }
+        @media (max-width: 440px) {
+            .grid3, .grid1 { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 1.9rem; }
         }
     </style>
 </head>
+<body>
 
-<body style="background:#BCBBB8">
-    <!--=======================navbar=====================================================-->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="/">Crop Recommendation</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
-                aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Contact</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled">About</a>
-                    </li>
-                </ul>
-                <form class="d-flex" role="search">
-                    <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-            </div>
+    <!-- Ambient background -->
+    <div class="aurora">
+        <div class="aurora-blob a"></div>
+        <div class="aurora-blob b"></div>
+        <div class="aurora-blob c"></div>
+    </div>
+    <div class="dot-grid"></div>
+
+    <!-- Page -->
+    <div class="page">
+
+        <!-- Brand -->
+        <div class="brand">
+            <div class="brand-leaf">🌿</div>
+            <div class="brand-name">Sci<b>Farm</b></div>
         </div>
-    </nav>
 
-    <!--==========================================================================================-->
-    <div class="container my-3 mt-3">
-        <h1 class="text-success">Crop Recommendation System <span class="text-success">🌱</span></h1>
+        <!-- Hero -->
+        <div class="hero">
+            <h1>Find the <span>right crop</span><br>for your land</h1>
+            <p>Enter your soil composition and local climate — the model will recommend the optimal crop to grow.</p>
+        </div>
 
-        <!--      adding form-->
-        <form action="/predict" method="POST">
-            <div class="row">
-                <div class="col-md-4">
-                    <label for="Nitrogen">Nitrogen</label>
-                    <input type="number" id="Nitrogen" name="Nitrogen" placeholder="Enter Nitrogen" class="form-control"
-                        required step="0">
+        <!-- Form -->
+        <div class="card">
+            <form action="/predict" method="POST" id="crop-form">
+
+                <!-- NPK -->
+                <div class="section-label">
+                    <span>Soil Nutrients</span>
+                    <div class="sl-line"></div>
                 </div>
-                <div class="col-md-4">
-                    <label for="Phosporus">Phosphorus</label>
-                    <input type="number" id="Phosporus" name="Phosporus" placeholder="Enter Phosphorus"
-                        class="form-control" required step="00">
+                <div class="grid3">
+                    <div class="field">
+                        <label for="Nitrogen">Nitrogen</label>
+                        <input type="number" id="Nitrogen" name="Nitrogen" 
+                               placeholder="0–140" required min="0" max="140" step="1">
+                        <div class="field-hint">kg/ha</div>
+                    </div>
+                    <div class="field">
+                        <label for="Phosporus">Phosphorus</label>
+                        <input type="number" id="Phosporus" name="Phosporus"
+                               placeholder="5–145" required min="0" max="145" step="1">
+                        <div class="field-hint">kg/ha</div>
+                    </div>
+                    <div class="field">
+                        <label for="Potassium">Potassium</label>
+                        <input type="number" id="Potassium" name="Potassium"
+                               placeholder="5–205" required min="0" max="205" step="1">
+                        <div class="field-hint">kg/ha</div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label for="Potassium">Potassium</label>
-                    <input type="number" id="Potassium" name="Potassium" placeholder="Enter Potassium"
-                        class="form-control" required step="0">
+
+                <!-- Climate -->
+                <div class="section-label">
+                    <span>Climate</span>
+                    <div class="sl-line"></div>
                 </div>
-            </div>
-
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <label for="Temperature">Temperature</label>
-                    <input type="number" step="0.01" id="Temperature" name="Temperature"
-                        placeholder="Enter Temperature in °C" class="form-control" required step="0">
+                <div class="grid3">
+                    <div class="field">
+                        <label for="Temperature">Temperature</label>
+                        <input type="number" id="Temperature" name="Temperature"
+                               placeholder="8–44 °C" required step="0.01">
+                        <div class="field-hint">°C average</div>
+                    </div>
+                    <div class="field">
+                        <label for="Humidity">Humidity</label>
+                        <input type="number" id="Humidity" name="Humidity"
+                               placeholder="14–100 %" required step="0.01">
+                        <div class="field-hint">% relative</div>
+                    </div>
+                    <div class="field">
+                        <label for="Ph">pH Level</label>
+                        <input type="number" id="Ph" name="Ph"
+                               placeholder="3.5–10" required step="0.01" min="0" max="14">
+                        <div class="field-hint">soil acidity</div>
+                    </div>
                 </div>
-                <div class="col-md-4">
-                    <label for="Humidity">Humidity</label>
-                    <input type="number" step="0.01" id="Humidity" name="Humidity" placeholder="Enter Humidity in %"
-                        class="form-control" required step="0">
+
+                <!-- Rainfall -->
+                <div class="section-label">
+                    <span>Rainfall</span>
+                    <div class="sl-line"></div>
                 </div>
-                <div class="col-md-4">
-                    <label for="Ph">pH</label>
-                    <input type="number" step="0.01" id="Ph" name="Ph" placeholder="Enter pH value" class="form-control"
-                        required step="0">
+                <div class="grid1">
+                    <div class="field">
+                        <label for="Rainfall">Annual Rainfall</label>
+                        <input type="number" id="Rainfall" name="Rainfall"
+                               placeholder="20–300 mm" required step="0.01">
+                        <div class="field-hint">mm annual avg</div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row mt-4">
-                <div class="col-md-4">
-                    <label for="Rainfall">Rainfall</label>
-                    <input type="number" step="0.01" id="Rainfall" name="Rainfall" placeholder="Enter Rainfall in mm"
-                        class="form-control" required>
+                <div class="submit-wrap">
+                    <button type="submit" class="btn-submit" id="submit-btn">
+                        Get Crop Recommendation →
+                    </button>
                 </div>
-            </div>
 
+            </form>
+        </div><!-- /.card -->
 
-
-            <div class="row mt-4">
-
-                <div class="col-md-12 text-center">
-                    <button type="submit" class="btn btn-primary btn-lg">Get Recommendation</button>
-                </div>
-            </div>
-        </form>
-
-
-
+        <!-- ── RESULT ──────────────────────────────────────── -->
         {% if result %}
-        <div class="card bg-dark" style="width: 18rem; margin-left: 505px;">
-            <img src="{{url_for('static', filename='img.jpg')}}" class="card-img-top" alt="...">
-            <div class="card-body">
-                <h5 class="card-title">Recommend Crop for cultivation is:</h5>
-                <p class="card-text">{{ result }}</p>
+        <div id="result-scroll-target"></div>
+        <div class="result-wrap" id="result-section">
+            <div class="result-card">
+                <div class="rc-letter" id="rc-letter">?</div>
+
+                <div class="rc-badge">AI Recommendation</div>
+
+                <div class="rc-main">
+                    <span class="rc-emoji" id="rc-emoji">🌿</span>
+                    <div>
+                        <div class="rc-name" id="rc-name">—</div>
+                        <div class="rc-sub">Best crop for your soil &amp; climate profile</div>
+                    </div>
+                </div>
+
+                <div class="rc-divider"></div>
+
+                <p class="rc-message" id="result-text">{{ result }}</p>
+
+                <div class="rc-footer">
+                    <div class="rc-tags">
+                        <div class="rc-tag">ML Powered</div>
+                        <div class="rc-tag">7 Parameters</div>
+                        <div class="rc-tag">Best Match</div>
+                    </div>
+                    <a href="/" class="rc-again">← Try different values</a>
+                </div>
             </div>
         </div>
         {% endif %}
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-</body>
 
+        <div class="footer">
+            <b>SciFarm</b> · Soil intelligence for smarter farming · 22 crop varieties
+        </div>
+
+    </div><!-- /.page -->
+
+    <script>
+    /* ── auto-scroll to result on page load ─── */
+    window.addEventListener('load', function () {
+        var target = document.getElementById('result-scroll-target');
+        if (target) {
+            setTimeout(function () {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
+        }
+    });
+
+    /* ── crop name + emoji from result ─────── */
+    (function () {
+        var nameEl   = document.getElementById('rc-name');
+        var emojiEl  = document.getElementById('rc-emoji');
+        var letterEl = document.getElementById('rc-letter');
+        var textEl   = document.getElementById('result-text');
+        if (!nameEl || !textEl) return;
+
+        var EMOJI = {
+            rice:'🌾', maize:'🌽', jute:'🪢', cotton:'🌸',
+            coconut:'🥥', papaya:'🍈', orange:'🍊', apple:'🍎',
+            muskmelon:'🍈', watermelon:'🍉', grapes:'🍇', mango:'🥭',
+            banana:'🍌', pomegranate:'❤️', lentil:'🫘', blackgram:'🫘',
+            mungbean:'🫘', mothbeans:'🫘', pigeonpeas:'🫛',
+            kidneybeans:'🫘', chickpea:'🫘', coffee:'☕'
+        };
+
+        var text  = textEl.textContent.trim();
+        var match = text.match(/^(\w[\w\s]*?)\s+is\s+the\s+best/i);
+        if (match) {
+            var crop = match[1].trim();
+            nameEl.textContent   = crop;
+            emojiEl.textContent  = EMOJI[crop.toLowerCase()] || '🌿';
+            if (letterEl) letterEl.textContent = crop.charAt(0).toUpperCase();
+        } else if (text.toLowerCase().indexOf('sorry') !== -1) {
+            nameEl.textContent  = 'No match found';
+            emojiEl.textContent = '❓';
+            if (letterEl) letterEl.textContent = '?';
+        }
+    })();
+
+    /* ── loading state on submit ────────────── */
+    var form = document.getElementById('crop-form');
+    var btn  = document.getElementById('submit-btn');
+    if (form && btn) {
+        form.addEventListener('submit', function () {
+            btn.textContent = 'Analyzing soil data…';
+            btn.disabled = true;
+        });
+    }
+    </script>
+
+</body>
 </html>
