@@ -1,6 +1,6 @@
 # 🌱 Crop Recommendation Web App
 
-This is a Flask-based web application that predicts the most suitable crop to cultivate based on environmental factors like soil nutrients, temperature, humidity, pH, and rainfall. The model uses machine learning for accurate predictions.
+This is a Flask-based web application that predicts the most suitable crop to cultivate based on environmental factors like soil nutrients, temperature, humidity, pH, and rainfall. The model uses machine learning for accurate predictions. 
 
 ---
 
